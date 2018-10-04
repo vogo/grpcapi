@@ -1,0 +1,28 @@
+syntax = "proto3";
+package grpcapi;
+
+// set go package name to pb
+option go_package = "pb";
+
+import "google/api/annotations.proto";
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string result = 1;
+}
+
+
+service HelloService {
+  rpc Hello(HelloRequest) returns (HelloResponse) {
+//    option (grpc.gateway.protoc_gen_swagger.options.openapiv2) = {
+//	summary: "hello service"
+//    };
+    option (google.api.http) = {
+      post: "/api/v1/hello"
+      body: "*"
+    };
+  }
+}
