@@ -1,3 +1,7 @@
+// Copyright 2018 The Vogo Authors. All rights reserved.
+// Use of this source code is governed by a Apache license
+// that can be found in the LICENSE file.
+
 package apigateway
 
 import (
@@ -7,6 +11,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/vogo/grpcapi/pkg/apigateway/spec"
 	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/pb"
 	"google.golang.org/grpc"
@@ -22,6 +27,8 @@ var (
 		{pb.RegisterEchoServiceHandlerFromEndpoint, config.EchoServiceAddress},
 		{pb.RegisterHelloServiceHandlerFromEndpoint, config.HelloServiceAddress},
 	}
+
+	patternSwagger = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"swagger", "api", "v1"}, ""))
 )
 
 func run(address string) error {
@@ -38,6 +45,11 @@ func run(address string) error {
 			return err
 		}
 	}
+
+	mux.Handle("GET", patternSwagger, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(spec.Files["api.swagger.json"]))
+	})
 
 	return http.ListenAndServe(address, mux)
 }

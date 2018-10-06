@@ -13,7 +13,7 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 		version: "0.0.1";
 		contact: {
 			name: "GrpcApi Project";
-			url: "https://wongoo.github.io/grpcapi";
+			url: "https://vogo.github.io/grpcapi";
 		};
 	};
 	schemes: HTTP;
