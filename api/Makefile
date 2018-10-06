@@ -26,7 +26,7 @@ generate: $(PROTO_FILES) Makefile
 	# need to exec chown finally
 	chown -R $${USER_ID}:$${GROUP_ID} ../pkg ../test
 	# format generated files
-	goimports -l -w -e -local=grpcapi ../pkg/pb
+	goimports -v -l -w -e -local=grpcapi ../pkg/pb
 	@echo "ok"
 
 clean:
