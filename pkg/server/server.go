@@ -19,7 +19,7 @@ type RegisterServerFunc func(*grpc.Server)
 // Serve start a grpc server registering given server
 func Serve(address string, register RegisterServerFunc) {
 	flag.Parse()
-	flag.Set("logtostderr", "true")
+	//flag.Set("logtostderr", "true")
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
