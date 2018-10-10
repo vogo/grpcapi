@@ -1,0 +1,13 @@
+digraph architecture{
+  user [label="user"];
+  frontend [label="frontend"];
+  oauth2 [label="oauth2 server"];
+  gw [label="api gateway",shape=box,comment="authentication,authorization,grpc gateway"];
+  hello [label="hello service"];
+  echo [label="echo service"];
+ 
+  user -> frontend [label="operation",color=blue]
+  frontend -> gw [label="restful",color=blue]
+  gw -> oauth2 [label="func call",style=dotted];
+  gw -> { hello echo } [label=grpc,color=blue];
+}
