@@ -6,13 +6,13 @@ package apigateway
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go2s/o2s/o2"
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pborman/uuid"
@@ -42,10 +42,10 @@ type register struct {
 
 var (
 	registers = []register{
-		{"Token Manager", pb.RegisterTokenManagerHandlerFromEndpoint, config.TokenServiceAddress},
 		{"Echo Service", pb.RegisterEchoServiceHandlerFromEndpoint, config.EchoServiceAddress},
 		{"Hello Service", pb.RegisterHelloServiceHandlerFromEndpoint, config.HelloServiceAddress},
 	}
+
 	//ClientOptions grpc client options
 	ClientOptions = []grpc.DialOption{
 		grpc.WithInsecure(),
@@ -112,35 +112,22 @@ func recovery() gin.HandlerFunc {
 }
 func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-
-		if req.URL.Path == "/api/v1/oauth2/token" {
+		if strings.HasPrefix(req.URL.Path, "/oauth2/") {
 			// skip auth requester
 			mux.ServeHTTP(w, req)
 			return
 		}
-
-		var stat *status.Status
 		ctx := req.Context()
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 
-		token := strings.SplitN(req.Header.Get(Authorization), " ", 2)
-		if token[0] != "Bearer" {
-			stat = status.New(codes.Unauthenticated, "valid token required")
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, stat.Err())
-			return
-		}
-
-		requester, err := auth.Validate(config.SecretKey, token[1])
+		oauth2Svr := o2.GetOauth2Svr()
+		tokenInfo, err := oauth2Svr.ValidationBearerToken(req)
 		if err != nil {
-			if err == auth.ErrExpired {
-				stat = status.New(codes.Unauthenticated, "token expired")
-			} else {
-				stat = status.New(codes.Unauthenticated, "token invalid")
-			}
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, stat.Err())
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, err.Error()).Err())
 			return
 		}
-		req.Header.Set(auth.RequesterKey, requester.ToJSON())
+		req.Header.Set(auth.KeyUserID, tokenInfo.GetUserID())
+		req.Header.Set(auth.KeyScope, tokenInfo.GetScope())
 		req.Header.Del(Authorization)
 
 		mux.ServeHTTP(w, req)
@@ -158,7 +145,8 @@ func mainHandler() http.Handler {
 	var gwmux = runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, req *http.Request) metadata.MD {
 			return metadata.Pairs(
-				auth.RequesterKey, req.Header.Get(auth.RequesterKey),
+				auth.KeyUserID, req.Header.Get(auth.KeyUserID),
+				auth.KeyScope, req.Header.Get(auth.KeyScope),
 				RequestIDKey, req.Header.Get(RequestIDKey),
 			)
 		}),
@@ -177,24 +165,30 @@ func mainHandler() http.Handler {
 	return mux
 }
 
-func ginRun() error {
-	gin.SetMode(gin.ReleaseMode)
+type server struct {
+	cfg *config.Config
+}
+
+func (s *server) run() error {
+	if !s.cfg.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	r := gin.New()
 	r.Use(log())
 	r.Use(recovery())
-	r.Any("/swagger/api/v1", gin.WrapH(swaggerHandler()))
 	r.Any("/api/v1/*filepath", gin.WrapH(mainHandler()))
+	r.GET("/swagger/api/v1", gin.WrapH(swaggerHandler()))
+
+	s.initOauth2(r)
 
 	return r.Run(config.APIGatewayAddress)
 }
 
 // Serve to start api gateway
-func Serve() {
-	flag.Parse()
-	defer glog.Flush()
-
-	if err := ginRun(); err != nil {
+func Serve(cfg *config.Config) {
+	s := &server{cfg: cfg}
+	if err := s.run(); err != nil {
 		glog.Fatal(err)
 	}
 }

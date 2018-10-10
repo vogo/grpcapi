@@ -13,7 +13,6 @@ import (
 
 	"github.com/vogo/grpcapi/test/client/echo_service"
 	"github.com/vogo/grpcapi/test/client/hello_service"
-	"github.com/vogo/grpcapi/test/client/token_manager"
 )
 
 // Default grpcapi HTTP client.
@@ -63,8 +62,6 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Grpcapi {
 
 	cli.HelloService = hello_service.New(transport, formats)
 
-	cli.TokenManager = token_manager.New(transport, formats)
-
 	return cli
 }
 
@@ -113,8 +110,6 @@ type Grpcapi struct {
 
 	HelloService *hello_service.Client
 
-	TokenManager *token_manager.Client
-
 	Transport runtime.ClientTransport
 }
 
@@ -125,7 +120,5 @@ func (c *Grpcapi) SetTransport(transport runtime.ClientTransport) {
 	c.EchoService.SetTransport(transport)
 
 	c.HelloService.SetTransport(transport)
-
-	c.TokenManager.SetTransport(transport)
 
 }

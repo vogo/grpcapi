@@ -1,0 +1,11 @@
+debug: false 
+mongo:
+  Addrs: 
+    - 127.0.0.1:27017
+  Database: oauth2
+  Username: oauth2
+  Password: oauth2
+  PoolLimit: 10
+log:
+  logtostderr: true
+  v: 0

@@ -4,8 +4,12 @@
 
 package main
 
-import "github.com/vogo/grpcapi/pkg/apigateway"
+import (
+	"github.com/vogo/grpcapi/pkg/apigateway"
+	"github.com/vogo/grpcapi/pkg/config"
+)
 
 func main() {
-	apigateway.Serve()
+	cfg := config.LoadConfig()
+	apigateway.Serve(cfg)
 }
