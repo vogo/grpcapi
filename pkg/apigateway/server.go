@@ -19,7 +19,6 @@ import (
 	"github.com/vogo/grpcapi/pkg/apigateway/spec"
 	"github.com/vogo/grpcapi/pkg/auth"
 	"github.com/vogo/grpcapi/pkg/config"
-	"github.com/vogo/grpcapi/pkg/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
@@ -34,17 +33,7 @@ const (
 	RequestIDKey = "X-Request-Id"
 )
 
-type register struct {
-	name string
-	f    func(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error)
-}
-
 var (
-	registers = []register{
-		{config.ServiceKeyEcho, pb.RegisterEchoServiceHandlerFromEndpoint},
-		{config.ServiceKeyHello, pb.RegisterHelloServiceHandlerFromEndpoint},
-	}
-
 	//ClientOptions grpc client options
 	ClientOptions = []grpc.DialOption{
 		grpc.WithInsecure(),
