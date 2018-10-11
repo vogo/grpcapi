@@ -5,9 +5,11 @@
 package main
 
 import (
+	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/service/echo"
 )
 
 func main() {
-	echo.Serve()
+	cfg := config.LoadConfig()
+	echo.Serve(cfg)
 }

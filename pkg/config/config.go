@@ -10,33 +10,34 @@ import (
 )
 
 var (
+	configFile = flag.String("config", "config", "config file path")
+
 	//SecretKey secret key
 	SecretKey = "ADkajfdJIALDSFJJkadf"
 
 	//APIGatewayAddress api gateway address
 	APIGatewayAddress = ":8080"
 
-	//TokenServiceAddress token service address
-	TokenServiceAddress = ":9001"
-
 	//EchoServiceAddress echo service address
-	EchoServiceAddress = ":9002"
+	EchoServiceAddress = ":9001"
 
 	//HelloServiceAddress hello service address
-	HelloServiceAddress = ":9003"
+	HelloServiceAddress = ":9002"
 
-	//EchoServiceEndpoint echo service endpoint
-	EchoServiceEndpoint = flag.String("echo_endpoint", EchoServiceAddress, "endpoint of echo service")
+	//ServiceKeyHello hello
+	ServiceKeyHello = "hello"
 
-	//HelloServiceEndpoint hello service endpoint
-	HelloServiceEndpoint = flag.String("hello_endpoint", HelloServiceAddress, "endpoint of hello service")
+	//ServiceKeyEcho echo
+	ServiceKeyEcho = "echo"
 )
 
 //Config config definition
 type Config struct {
-	Mongo o2m.MongoConfig `mapstructure:"mongo"`
-	Log   LogConfig       `mapstructure:"log"`
-	Debug bool            `mapstructure:"debug"`
+	Mongo     o2m.MongoConfig   `mapstructure:"mongo"`
+	Log       LogConfig         `mapstructure:"log"`
+	Debug     bool              `mapstructure:"debug"`
+	Endpoints map[string]string `mapstructure:"endpoints"`
+	SignKey   string            `mapstructure:"sign_key"`
 }
 
 //LogConfig log config
@@ -49,7 +50,12 @@ type LogConfig struct {
 //DefaultConfig default config
 func DefaultConfig() *Config {
 	return &Config{
-		Debug: true,
+		Debug:   true,
+		SignKey: "grpcapi-38ASD(*DFL@S",
+		Endpoints: map[string]string{
+			"echo":  "localhost:9001",
+			"hello": "localhost:9002",
+		},
 		Mongo: o2m.MongoConfig{
 			Addrs:     []string{"127.0.0.1:27017"},
 			Database:  "oauth2",
@@ -66,17 +72,13 @@ func DefaultConfig() *Config {
 
 //LoadConfig load default config
 func LoadConfig() *Config {
-	return LoadConfigFile("config")
+	flag.Parse()
+	return LoadConfigFile(*configFile)
 }
 
 //LoadConfigFile load config file
-func LoadConfigFile(filename string) *Config {
-	flag.Parse()
-
-	viper.SetConfigName(filename)
-	viper.AddConfigPath("/etc/grpcapi/")
-	viper.AddConfigPath("$HOME/.grpcapi")
-	viper.AddConfigPath(".")
+func LoadConfigFile(file string) *Config {
+	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")
 	err := viper.ReadInConfig()
 	if err != nil {

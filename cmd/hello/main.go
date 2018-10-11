@@ -4,8 +4,12 @@
 
 package main
 
-import "github.com/vogo/grpcapi/pkg/service/hello"
+import (
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/service/hello"
+)
 
 func main() {
-	hello.Serve()
+	cfg := config.LoadConfig()
+	hello.Serve(cfg)
 }

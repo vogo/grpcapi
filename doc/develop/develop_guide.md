@@ -43,7 +43,7 @@ go run cmd/echo/main.go
 go run cmd/hello/main.go
 
 # Run ApiGateway Service
-go run cmd/apigateway/main.go
+go run cmd/apigateway/main.go -config=cmd/apigateway/config.yml
 ```
 
 ## 4.Add Mongodb Oauth2 Demo Data

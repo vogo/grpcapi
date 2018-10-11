@@ -35,15 +35,14 @@ const (
 )
 
 type register struct {
-	name     string
-	f        func(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error)
-	endpoint string
+	name string
+	f    func(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error)
 }
 
 var (
 	registers = []register{
-		{"Echo Service", pb.RegisterEchoServiceHandlerFromEndpoint, config.EchoServiceAddress},
-		{"Hello Service", pb.RegisterHelloServiceHandlerFromEndpoint, config.HelloServiceAddress},
+		{config.ServiceKeyEcho, pb.RegisterEchoServiceHandlerFromEndpoint},
+		{config.ServiceKeyHello, pb.RegisterHelloServiceHandlerFromEndpoint},
 	}
 
 	//ClientOptions grpc client options
@@ -121,13 +120,18 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 
 		oauth2Svr := o2.GetOauth2Svr()
-		tokenInfo, err := oauth2Svr.ValidationBearerToken(req)
+		token, ok := oauth2Svr.BearerAuth(req)
+		if !ok {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, "token required").Err())
+			return
+		}
+		claims, err := oauth2Svr.ParseJWTAccessToken(token)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, err.Error()).Err())
 			return
 		}
-		req.Header.Set(auth.KeyUserID, tokenInfo.GetUserID())
-		req.Header.Set(auth.KeyScope, tokenInfo.GetScope())
+		req.Header.Set(auth.KeyUserID, claims.UserID)
+		req.Header.Set(auth.KeyScope, "admin")
 		req.Header.Del(Authorization)
 
 		mux.ServeHTTP(w, req)
@@ -141,7 +145,7 @@ func swaggerHandler() http.Handler {
 	})
 }
 
-func mainHandler() http.Handler {
+func mainHandler(cfg *config.Config) http.Handler {
 	var gwmux = runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, req *http.Request) metadata.MD {
 			return metadata.Pairs(
@@ -153,8 +157,12 @@ func mainHandler() http.Handler {
 	)
 
 	for _, r := range registers {
-		glog.Infof("%v %v", r.name, r.endpoint)
-		err := r.f(context.Background(), gwmux, r.endpoint, ClientOptions)
+		endpoint := cfg.Endpoints[r.name]
+		if endpoint == "" {
+			panic("no endpoint config for service " + r.name)
+		}
+		glog.Infof("%v %v", r.name, endpoint)
+		err := r.f(context.Background(), gwmux, endpoint, ClientOptions)
 		if err != nil {
 			glog.Fatal(err)
 		}
@@ -177,7 +185,7 @@ func (s *server) run() error {
 	r := gin.New()
 	r.Use(log())
 	r.Use(recovery())
-	r.Any("/api/v1/*filepath", gin.WrapH(mainHandler()))
+	r.Any("/api/v1/*filepath", gin.WrapH(mainHandler(s.cfg)))
 	r.GET("/swagger/api/v1", gin.WrapH(swaggerHandler()))
 
 	s.initOauth2(r)

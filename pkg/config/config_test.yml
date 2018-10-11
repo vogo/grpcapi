@@ -1,3 +1,7 @@
+debug: True
+endpoints:
+  echo: localhost:9001
+  hello: localhost:9002
 mongo:
   Addrs: 
     - 127.0.0.1:27017

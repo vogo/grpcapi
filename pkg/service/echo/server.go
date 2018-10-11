@@ -26,7 +26,7 @@ func (s *Server) Echo(c context.Context, req *pb.EchoRequest) (res *pb.EchoRespo
 }
 
 // Serve to start grpc server
-func Serve() {
+func Serve(c *config.Config) {
 	server.Serve(config.EchoServiceAddress, func(s *grpc.Server) {
 		pb.RegisterEchoServiceServer(s, &Server{})
 	})

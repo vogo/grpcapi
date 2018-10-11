@@ -26,7 +26,7 @@ func (s *Server) Hello(c context.Context, req *pb.HelloRequest) (res *pb.HelloRe
 }
 
 // Serve to start grpc server
-func Serve() {
+func Serve(c *config.Config) {
 	server.Serve(config.HelloServiceAddress, func(s *grpc.Server) {
 		pb.RegisterHelloServiceServer(s, &Server{})
 	})
