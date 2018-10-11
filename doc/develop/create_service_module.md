@@ -31,8 +31,8 @@ add grpc service register map in file `pkg/apigateway/proxy.go`:
 ```
 var (
 	registers = []register{
-		{config.ServiceKeyEcho, pb.RegisterEchoServiceHandlerFromEndpoint},
-		{config.ServiceKeyHello, pb.RegisterHelloServiceHandlerFromEndpoint},
+		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceEcho, config.PortEcho), pb.RegisterEchoServiceHandlerFromEndpoint},
+		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceHello, config.PortHello), pb.RegisterHelloServiceHandlerFromEndpoint},
 	}
 )
 ```

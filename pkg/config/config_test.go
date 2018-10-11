@@ -1,3 +1,7 @@
+// Copyright 2018 The Vogo Authors. All rights reserved.
+// Use of this source code is governed by a Apache license
+// that can be found in the LICENSE file.
+
 package config
 
 import (
@@ -21,6 +25,4 @@ func TestLoadConfig(t *testing.T) {
 	}
 
 	assert.True(t, c.Debug)
-	assert.Equal(t, "localhost:9001", c.Endpoints["echo"])
-	assert.Equal(t, "localhost:9002", c.Endpoints["hello"])
 }

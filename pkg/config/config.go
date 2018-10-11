@@ -1,3 +1,7 @@
+// Copyright 2018 The Vogo Authors. All rights reserved.
+// Use of this source code is governed by a Apache license
+// that can be found in the LICENSE file.
+
 package config
 
 import (
@@ -11,38 +15,37 @@ import (
 
 var (
 	configFile = flag.String("config", "config", "config file path")
+)
 
-	//SecretKey secret key
-	SecretKey = "ADkajfdJIALDSFJJkadf"
+const (
+	//HostPrefix host name prefix
+	HostPrefix = "grpc-"
+	//ServiceEcho echo service name
+	ServiceEcho = "echo"
+	//ServiceHello hello service name
+	ServiceHello = "hello"
+)
 
-	//APIGatewayAddress api gateway address
-	APIGatewayAddress = ":8080"
-
-	//EchoServiceAddress echo service address
-	EchoServiceAddress = ":9001"
-
-	//HelloServiceAddress hello service address
-	HelloServiceAddress = ":9002"
-
-	//ServiceKeyHello hello
-	ServiceKeyHello = "hello"
-
-	//ServiceKeyEcho echo
-	ServiceKeyEcho = "echo"
+const (
+	//PortAPIGateway api gateway port
+	PortAPIGateway = 8080
+	//PortEcho echo service port
+	PortEcho = 9001
+	//PortHello hello service port
+	PortHello = 9002
 )
 
 //Config config definition
 type Config struct {
-	Mongo     o2m.MongoConfig   `mapstructure:"mongo"`
-	Log       LogConfig         `mapstructure:"log"`
-	Debug     bool              `mapstructure:"debug"`
-	Endpoints map[string]string `mapstructure:"endpoints"`
-	SignKey   string            `mapstructure:"sign_key"`
+	Mongo   o2m.MongoConfig `mapstructure:"mongo"`
+	Log     LogConfig       `mapstructure:"log"`
+	Debug   bool            `mapstructure:"debug"`
+	SignKey string          `mapstructure:"sign-key"`
 }
 
 //LogConfig log config
 type LogConfig struct {
-	logDir      string `mapstructure:"log_dir"`
+	logDir      string `mapstructure:"log-dir"`
 	logtostderr bool   `mapstructure:"logtostderr"`
 	v           int    `mapstructure:"v"`
 }
@@ -52,10 +55,6 @@ func DefaultConfig() *Config {
 	return &Config{
 		Debug:   true,
 		SignKey: "grpcapi-38ASD(*DFL@S",
-		Endpoints: map[string]string{
-			"echo":  "localhost:9001",
-			"hello": "localhost:9002",
-		},
 		Mongo: o2m.MongoConfig{
 			Addrs:     []string{"127.0.0.1:27017"},
 			Database:  "oauth2",

@@ -140,12 +140,8 @@ func mainHandler(cfg *config.Config) http.Handler {
 	)
 
 	for _, r := range registers {
-		endpoint := cfg.Endpoints[r.name]
-		if endpoint == "" {
-			panic("no endpoint config for service " + r.name)
-		}
-		glog.Infof("%v %v", r.name, endpoint)
-		err := r.f(context.Background(), gwmux, endpoint, ClientOptions)
+		glog.Infof("proxy %v", r.endpoint)
+		err := r.f(context.Background(), gwmux, r.endpoint, ClientOptions)
 		if err != nil {
 			glog.Fatal(err)
 		}
@@ -173,7 +169,7 @@ func (s *server) run() error {
 
 	s.initOauth2(r)
 
-	return r.Run(config.APIGatewayAddress)
+	return r.Run(fmt.Sprintf(":%d", config.PortAPIGateway))
 }
 
 // Serve to start api gateway

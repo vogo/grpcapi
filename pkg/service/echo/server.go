@@ -6,6 +6,7 @@ package echo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/pb"
@@ -27,7 +28,7 @@ func (s *Server) Echo(c context.Context, req *pb.EchoRequest) (res *pb.EchoRespo
 
 // Serve to start grpc server
 func Serve(c *config.Config) {
-	server.Serve(config.EchoServiceAddress, func(s *grpc.Server) {
+	server.Serve(fmt.Sprintf(":%d", config.PortEcho), func(s *grpc.Server) {
 		pb.RegisterEchoServiceServer(s, &Server{})
 	})
 }

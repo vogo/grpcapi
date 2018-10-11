@@ -35,6 +35,12 @@ go mod download
 
 ## 3.Run 
 
+edit `/etc/hosts` to add ip-host map for localhost:
+```
+127.0.0.1 grpc-echo grpc-hello
+```
+
+run services and apigateway:
 ```bash
 # Run Echo Grpc Service
 go run cmd/echo/main.go

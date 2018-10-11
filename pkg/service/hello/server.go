@@ -6,6 +6,7 @@ package hello
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/glog"
 	"github.com/vogo/grpcapi/pkg/auth"
@@ -33,7 +34,7 @@ func (s *Server) Hello(c context.Context, req *pb.HelloRequest) (res *pb.HelloRe
 
 // Serve to start grpc server
 func Serve(c *config.Config) {
-	server.Serve(config.HelloServiceAddress, func(s *grpc.Server) {
+	server.Serve(fmt.Sprintf(":%d", config.PortHello), func(s *grpc.Server) {
 		pb.RegisterHelloServiceServer(s, &Server{})
 	})
 }
