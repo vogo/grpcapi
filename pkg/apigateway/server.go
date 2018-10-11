@@ -26,13 +26,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	//Authorization header
-	Authorization = "Authorization"
-	//RequestIDKey header
-	RequestIDKey = "X-Request-Id"
-)
-
 var (
 	//ClientOptions grpc client options
 	ClientOptions = []grpc.DialOption{
@@ -48,8 +41,8 @@ var (
 func log() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := uuid.New()
-		c.Request.Header.Set(RequestIDKey, requestID)
-		c.Writer.Header().Set(RequestIDKey, requestID)
+		c.Request.Header.Set(auth.KeyRequestID, requestID)
+		c.Writer.Header().Set(auth.KeyRequestID, requestID)
 
 		t := time.Now()
 
@@ -119,9 +112,10 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, err.Error()).Err())
 			return
 		}
+		glog.V(1).Infof("request user id %v", claims.UserID)
 		req.Header.Set(auth.KeyUserID, claims.UserID)
 		req.Header.Set(auth.KeyScope, "admin")
-		req.Header.Del(Authorization)
+		req.Header.Del(auth.Authorization)
 
 		mux.ServeHTTP(w, req)
 	})
@@ -140,7 +134,7 @@ func mainHandler(cfg *config.Config) http.Handler {
 			return metadata.Pairs(
 				auth.KeyUserID, req.Header.Get(auth.KeyUserID),
 				auth.KeyScope, req.Header.Get(auth.KeyScope),
-				RequestIDKey, req.Header.Get(RequestIDKey),
+				auth.KeyRequestID, req.Header.Get(auth.KeyRequestID),
 			)
 		}),
 	)
