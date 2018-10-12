@@ -1,13 +1,16 @@
 digraph architecture{
   user [label="user"];
-  frontend [label="frontend"];
-  oauth2 [label="oauth2 server"];
+  ui [label="webui"];
+  cmd [label="command"];
+  oauth2 [label="oauth2 server",style=dotted];
   gw [label="api gateway",shape=box,comment="authentication,authorization,grpc gateway"];
   hello [label="hello service"];
   echo [label="echo service"];
  
-  user -> frontend [label="operation",color=blue]
-  frontend -> gw [label="restful",color=blue]
-  gw -> oauth2 [label="func call",style=dotted];
+  user -> { ui cmd } [label="operation",color=blue]
+  { ui cmd } -> gw [label="restful",color=blue]
+  gw -> oauth2 [label="embedded func call",style=dotted];
   gw -> { hello echo } [label=grpc,color=blue];
+  
+  echo -> hello [label=grpc,color=red];
 }
