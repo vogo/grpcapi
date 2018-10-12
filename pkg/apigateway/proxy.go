@@ -6,7 +6,6 @@ package apigateway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/vogo/grpcapi/pkg/config"
@@ -21,7 +20,7 @@ type register struct {
 
 var (
 	registers = []register{
-		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceEcho, config.PortEcho), pb.RegisterEchoServiceHandlerFromEndpoint},
-		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceHello, config.PortHello), pb.RegisterHelloServiceHandlerFromEndpoint},
+		{config.EndpointEcho, pb.RegisterEchoServiceHandlerFromEndpoint},
+		{config.EndpointHello, pb.RegisterHelloServiceHandlerFromEndpoint},
 	}
 )

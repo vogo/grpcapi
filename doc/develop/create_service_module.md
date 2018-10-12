@@ -14,8 +14,8 @@ And provid a `Serve()` function to start grpc server
 ```
 // Serve to start grpc server
 func Serve(c *config.Config) {
-	server.Serve(config.HelloServiceAddress, func(s *grpc.Server) {
-		pb.RegisterHelloServiceServer(s, &Server{})
+	server.Serve(fmt.Sprintf(":%d", config.PortEcho), func(s *grpc.Server) {
+		pb.RegisterEchoServiceServer(s, &Server{})
 	})
 }
 ```
@@ -31,8 +31,8 @@ add grpc service register map in file `pkg/apigateway/proxy.go`:
 ```
 var (
 	registers = []register{
-		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceEcho, config.PortEcho), pb.RegisterEchoServiceHandlerFromEndpoint},
-		{fmt.Sprintf("%s%s:%d", config.HostPrefix, config.ServiceHello, config.PortHello), pb.RegisterHelloServiceHandlerFromEndpoint},
+		{config.EndpointEcho, pb.RegisterEchoServiceHandlerFromEndpoint},
+		{config.EndpointHello, pb.RegisterHelloServiceHandlerFromEndpoint},
 	}
 )
 ```

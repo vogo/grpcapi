@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/golang/glog"
+	"github.com/vogo/grpcapi/pkg/client/hello"
 	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/pb"
 	"github.com/vogo/grpcapi/pkg/server"
@@ -19,8 +21,19 @@ type Server struct{}
 
 // Echo echo for request value
 func (s *Server) Echo(c context.Context, req *pb.EchoRequest) (res *pb.EchoResponse, err error) {
+	helloClient, err := hello.NewClient()
+	if err != nil {
+		return nil, err
+	}
+	helloReq := &pb.HelloRequest{Name: req.Value}
+	helloRes, err := helloClient.Hello(c, helloReq)
+	if err != nil {
+		return nil, err
+	}
+	glog.V(1).Infof("hello result:%v", helloRes.Result)
+
 	res = &pb.EchoResponse{
-		Result: Echo(req.Value),
+		Result: Echo(helloRes.Result),
 	}
 
 	return res, nil

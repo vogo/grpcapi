@@ -6,6 +6,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 
 	"github.com/go2s/o2m"
@@ -33,6 +34,20 @@ const (
 	PortEcho = 9001
 	//PortHello hello service port
 	PortHello = 9002
+)
+
+const (
+	//HostEcho echo service host
+	HostEcho = HostPrefix + ServiceEcho
+	//HostHello hello service host
+	HostHello = HostPrefix + ServiceHello
+)
+
+var (
+	//EndpointEcho echo service address
+	EndpointEcho = fmt.Sprintf("%s:%d", HostEcho, PortEcho)
+	//EndpointHello hello service address
+	EndpointHello = fmt.Sprintf("%s:%d", HostHello, PortHello)
 )
 
 //Config config definition
