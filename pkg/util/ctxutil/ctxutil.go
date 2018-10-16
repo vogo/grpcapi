@@ -61,16 +61,29 @@ func GetSingleValue(ctx context.Context, key string) string {
 
 //SetUserID set user id
 func SetUserID(ctx context.Context, userID string) context.Context {
-	return SetValue(ctx, map[interface{}]string{
-		auth.KeyUserID: userID,
-	})
+	ctx = WithUserID(ctx, userID)
+	return SetOutgoingContext(ctx, auth.KeyUserID, userID)
+}
+
+//WithUserID set user id
+func WithUserID(ctx context.Context, userID string) context.Context {
+	return WithValue(ctx, auth.KeyUserID, userID)
 }
 
 //SetRequestID set request id
 func SetRequestID(ctx context.Context, requestID string) context.Context {
-	return SetValue(ctx, map[interface{}]string{
-		auth.KeyRequestID: requestID,
-	})
+	ctx = WithRequestID(ctx, requestID)
+	return SetOutgoingContext(ctx, auth.KeyRequestID, requestID)
+}
+
+//WithRequestID with request id
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	return WithValue(ctx, auth.KeyRequestID, requestID)
+}
+
+//WithValue set key/value map into context
+func WithValue(ctx context.Context, k interface{}, v string) context.Context {
+	return context.WithValue(ctx, k, []string{v})
 }
 
 //SetValue set key/value map into context

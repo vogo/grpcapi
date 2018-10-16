@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/glog"
+	"github.com/vogo/clog"
 	"github.com/vogo/grpcapi/pkg/client/hello"
 	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/pb"
@@ -30,7 +30,7 @@ func (s *Server) Echo(c context.Context, req *pb.EchoRequest) (res *pb.EchoRespo
 	if err != nil {
 		return nil, err
 	}
-	glog.V(1).Infof("hello result:%v", helloRes.Result)
+	clog.Debug(c, "hello result:%v", helloRes.Result)
 
 	res = &pb.EchoResponse{
 		Result: Echo(helloRes.Result),

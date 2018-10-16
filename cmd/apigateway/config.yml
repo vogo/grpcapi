@@ -1,4 +1,3 @@
-debug: false 
 mongo:
   Addrs: 
     - 127.0.0.1:27017
@@ -9,3 +8,9 @@ mongo:
 log:
   logtostderr: true
   v: 0
+  level: debug
+  max-size: 10
+  max-backups : 3
+  max-age: 30
+  compress: false
+

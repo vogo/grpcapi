@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/vogo/clog"
 	"github.com/vogo/grpcapi/pkg/util/ctxutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -34,16 +34,16 @@ type GRPCServerCallbackFunc func(*grpc.Server)
 func Serve(address string, callback GRPCServerCallbackFunc) {
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		glog.Fatalf("failed to listen: %v", err)
+		clog.Fatal(nil, "failed to listen: %v", err)
 	}
 	//	s := grpc.NewServer()
 	s := grpc.NewServer(grpcOptions()...)
 	callback(s)
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
-	glog.Info("start grpc on ", address)
+	clog.Info(nil, "start grpc on %s", address)
 	if err := s.Serve(lis); err != nil {
-		glog.Fatalf("failed to serve: %v", err)
+		clog.Fatal(nil, "failed to serve: %v", err)
 	}
 }
 
@@ -74,8 +74,8 @@ func grpcOptions() []grpc.ServerOption {
 			//},
 			grpc_recovery.UnaryServerInterceptor(
 				grpc_recovery.WithRecoveryHandler(func(p interface{}) error {
-					glog.Errorf("GRPC server recovery with error: %+v", p)
-					glog.Errorf(string(debug.Stack()))
+					clog.Error(nil, "GRPC server recovery with error: %+v", p)
+					clog.Error(nil, string(debug.Stack()))
 					if e, ok := p.(error); ok {
 						return e
 					}
@@ -87,8 +87,8 @@ func grpcOptions() []grpc.ServerOption {
 		grpc_middleware.WithStreamServerChain(
 			grpc_recovery.StreamServerInterceptor(
 				grpc_recovery.WithRecoveryHandler(func(p interface{}) error {
-					glog.Errorf("GRPC server recovery with error: %+v", p)
-					glog.Errorf(string(debug.Stack()))
+					clog.Error(nil, "GRPC server recovery with error: %+v", p)
+					clog.Error(nil, string(debug.Stack()))
 					if e, ok := p.(error); ok {
 						return e
 					}
@@ -111,32 +111,33 @@ func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		var err error
-		s := ctxutil.GetUserID(ctx)
+		userID := ctxutil.GetUserID(ctx)
 		requestID := ctxutil.GetRequestID(ctx)
-		ctx = ctxutil.SetRequestID(ctx, requestID)
-		ctx = ctxutil.SetUserID(ctx, s)
 
 		method := strings.Split(info.FullMethod, "/")
 		action := method[len(method)-1]
 
-		logPrefix := fmt.Sprintf("%s | %s | %+v |", requestID, action, s)
+		logPrefix := fmt.Sprintf("%s | %+v |", action, userID)
 
 		if p, ok := req.(proto.Message); ok {
 			if content, err := jsonPbMarshaller.MarshalToString(p); err != nil {
-				glog.Errorf("%s failed to marshal proto message to string [%+v]", logPrefix, err)
+				clog.Error(ctx, "%s failed to marshal proto message to string [%+v]", logPrefix, err)
 			} else {
-				glog.Infof("%s request received: %s", logPrefix, content)
+				clog.Info(ctx, "%s request received: %s", logPrefix, content)
 			}
 		}
+
+		ctx = ctxutil.SetRequestID(ctx, requestID)
+		ctx = ctxutil.SetUserID(ctx, userID)
+
 		start := time.Now()
-
 		resp, err := handler(ctx, req)
-
 		elapsed := time.Since(start)
-		glog.Infof("%s request elapse: %s", logPrefix, elapsed)
+		clog.Info(ctx, "%s request elapse: %s", logPrefix, elapsed)
+
 		if e, ok := status.FromError(err); ok {
 			if e.Code() != codes.OK {
-				glog.V(1).Infof("%s response error: %s, %s", logPrefix, e.Code().String(), e.Message())
+				clog.Info(ctx, "%s response error: %s, %s", logPrefix, e.Code().String(), e.Message())
 			}
 		}
 		return resp, err

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/vogo/clog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -25,6 +25,7 @@ var ClientOptions = []grpc.DialOption{
 
 var clientCache sync.Map
 
+//NewClient new grpc client
 func NewClient(host string, port int) (*grpc.ClientConn, error) {
 	endpoint := fmt.Sprintf("%s:%d", host, port)
 
@@ -34,13 +35,14 @@ func NewClient(host string, port int) (*grpc.ClientConn, error) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, endpoint, ClientOptions...)
 	if err != nil {
-		glog.V(1).Infof("dial error:%v", err)
+		clog.Debug(nil, "dial error:%v", err)
 		return nil, err
 	}
 	clientCache.Store(endpoint, conn)
 	return conn, nil
 }
 
+//NewTLSClient new grpc tls cliet
 func NewTLSClient(host string, port int, tlsConfig *tls.Config) (*grpc.ClientConn, error) {
 	endpoint := fmt.Sprintf("%s:%d", host, port)
 	if conn, ok := clientCache.Load(endpoint); ok {

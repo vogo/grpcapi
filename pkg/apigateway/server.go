@@ -13,9 +13,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go2s/o2s/o2"
-	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pborman/uuid"
+	"github.com/vogo/clog"
 	"github.com/vogo/grpcapi/pkg/apigateway/spec"
 	"github.com/vogo/grpcapi/pkg/auth"
 	"github.com/vogo/grpcapi/pkg/config"
@@ -55,8 +55,7 @@ func log() gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 		path := c.Request.URL.Path
 
-		logStr := fmt.Sprintf("%s | %3d | %v | %s | %s %s %s",
-			requestID,
+		logStr := fmt.Sprintf("%3d | %v | %s | %s %s %s",
 			statusCode,
 			latency,
 			clientIP, method,
@@ -66,11 +65,11 @@ func log() gin.HandlerFunc {
 
 		switch {
 		case statusCode >= 400 && statusCode <= 499:
-			glog.Info(logStr)
+			clog.Log(clog.WarnLevel, requestID, logStr)
 		case statusCode >= 500:
-			glog.Error(logStr)
+			clog.Log(clog.ErrorLevel, requestID, logStr)
 		default:
-			glog.Info(logStr)
+			clog.Log(clog.InfoLevel, requestID, logStr)
 		}
 	}
 }
@@ -79,9 +78,7 @@ func recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				//httprequest, _ := httputil.DumpRequest(c.Request, false)
-				//logger.Critical(nil, "Panic recovered: %+v\n%s", err, string(httprequest))
-				glog.Errorf("Panic recovered:%+v\n", err)
+				clog.Fatal(c, "Panic recovered:%+v", err)
 				c.JSON(500, gin.H{
 					"title": "Error",
 					"err":   err,
@@ -112,7 +109,7 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, err.Error()).Err())
 			return
 		}
-		glog.V(1).Infof("request user id %v", claims.UserID)
+		clog.Debug(ctx, "request user id %v", claims.UserID)
 		req.Header.Set(auth.KeyUserID, claims.UserID)
 		req.Header.Set(auth.KeyScope, "admin")
 		req.Header.Del(auth.Authorization)
@@ -140,10 +137,11 @@ func mainHandler(cfg *config.Config) http.Handler {
 	)
 
 	for _, r := range registers {
-		glog.Infof("proxy %v", r.endpoint)
-		err := r.f(context.Background(), gwmux, r.endpoint, ClientOptions)
+		clog.Info(nil, "proxy %v", r.endpoint)
+		ctx := context.Background()
+		err := r.f(ctx, gwmux, r.endpoint, ClientOptions)
 		if err != nil {
-			glog.Fatal(err)
+			clog.Fatal(ctx, "%v", err)
 		}
 	}
 
@@ -157,7 +155,7 @@ type server struct {
 }
 
 func (s *server) run() error {
-	if !s.cfg.Debug {
+	if clog.GlobalLevel() > clog.DebugLevel {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -176,6 +174,6 @@ func (s *server) run() error {
 func Serve(cfg *config.Config) {
 	s := &server{cfg: cfg}
 	if err := s.run(); err != nil {
-		glog.Fatal(err)
+		clog.Fatal(nil, "%v", err)
 	}
 }

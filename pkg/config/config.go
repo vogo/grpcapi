@@ -5,13 +5,17 @@
 package config
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"path/filepath"
 	"strconv"
 
 	"github.com/go2s/o2m"
-	"github.com/golang/glog"
 	"github.com/spf13/viper"
+	"github.com/vogo/clog"
+	"github.com/vogo/grpcapi/pkg/util/ctxutil"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -54,21 +58,25 @@ var (
 type Config struct {
 	Mongo   o2m.MongoConfig `mapstructure:"mongo"`
 	Log     LogConfig       `mapstructure:"log"`
-	Debug   bool            `mapstructure:"debug"`
 	SignKey string          `mapstructure:"sign-key"`
 }
 
 //LogConfig log config
 type LogConfig struct {
-	logDir      string `mapstructure:"log-dir"`
-	logtostderr bool   `mapstructure:"logtostderr"`
-	v           int    `mapstructure:"v"`
+	Dir         string `mapstructure:"dir"`
+	Filename    string `mapstructure:"filename"`
+	Level       string `mapstructure:"level"`
+	MaxSize     int    `mapstructure:"max-size"` //MB
+	MaxBackups  int    `mapstructure:"max-backups"`
+	MaxAge      int    `mapstructure:"max-age"` //days
+	Compress    bool   `mapstructure:"compress"`
+	Logtostderr bool   `mapstructure:"logtostderr"`
+	V           int    `mapstructure:"v"`
 }
 
 //DefaultConfig default config
 func DefaultConfig() *Config {
 	return &Config{
-		Debug:   true,
 		SignKey: "grpcapi-38ASD(*DFL@S",
 		Mongo: o2m.MongoConfig{
 			Addrs:     []string{"127.0.0.1:27017"},
@@ -78,8 +86,13 @@ func DefaultConfig() *Config {
 			PoolLimit: 10,
 		},
 		Log: LogConfig{
-			logtostderr: true,
-			v:           -1,
+			Logtostderr: true,
+			V:           -1,
+			MaxSize:     10,
+			MaxBackups:  10,
+			MaxAge:      30,
+			Compress:    false,
+			Level:       "info",
 		},
 	}
 }
@@ -92,29 +105,52 @@ func LoadConfig() *Config {
 
 //LoadConfigFile load config file
 func LoadConfigFile(file string) *Config {
+	//cfg := DefaultConfig()
+	cfg := &Config{}
+
 	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")
 	err := viper.ReadInConfig()
 	if err != nil {
-		glog.Info(err)
-	}
-	c := DefaultConfig()
-	err = viper.Unmarshal(c)
-	if err != nil {
-		glog.Fatalf("unable to decode into struct, %v", err)
+		clog.Info(nil, "no config file provided, using default config instead. [error] %v", err)
+	} else {
+		err = viper.Unmarshal(cfg)
+		if err != nil {
+			clog.Fatal(nil, "unable to decode into struct, %v", err)
+		}
 	}
 
-	configLog(c)
+	configLog(cfg)
 
-	return c
+	return cfg
 }
 func configLog(cfg *Config) {
-	if cfg.Log.logDir != "" {
-		flag.Set("log_dir", cfg.Log.logDir)
+	if cfg.Log.Dir != "" {
+		flag.Set("log_dir", cfg.Log.Dir)
+		filename := cfg.Log.Filename
+		if filename == "" {
+			filename = "grpc.log"
+		}
+		clog.SetOutput(&lumberjack.Logger{
+			Filename:   filepath.Join(cfg.Log.Dir, filename),
+			MaxSize:    cfg.Log.MaxSize,
+			MaxBackups: cfg.Log.MaxBackups,
+			MaxAge:     cfg.Log.MaxAge,
+			Compress:   cfg.Log.Compress})
 	}
-	flag.Set("logtostderr", strconv.FormatBool(cfg.Log.logtostderr))
-	if cfg.Log.v >= 0 {
-		flag.Set("v", strconv.Itoa(cfg.Log.v))
+
+	clog.SetContextFommatter(func(ctx context.Context) string {
+		if rid := ctxutil.GetRequestID(ctx); rid != "" {
+			return rid
+		}
+		return "-"
+	})
+
+	clog.SetLevelByString(cfg.Log.Level)
+
+	flag.Set("logtostderr", strconv.FormatBool(cfg.Log.Logtostderr))
+	if cfg.Log.V >= 0 {
+		flag.Set("v", strconv.Itoa(cfg.Log.V))
 	}
 
 }
