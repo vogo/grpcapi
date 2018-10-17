@@ -20,7 +20,7 @@ require (
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.2.2
-	github.com/vogo/clog v0.0.0-20181016072022-7f0c7494cb6c
+	github.com/vogo/clog v0.0.0-20181017095903-cc7b8dcd3998
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e // indirect
 	golang.org/x/lint v0.0.0-20181011164241-5906bd5c48cd // indirect
 	golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1

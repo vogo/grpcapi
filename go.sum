@@ -205,6 +205,8 @@ github.com/vogo/clog v0.0.0-20181016062012-50690a23ed48 h1:SrMwrpAKmnJh+QCY44ETs
 github.com/vogo/clog v0.0.0-20181016062012-50690a23ed48/go.mod h1:RYd7K9PTYmbBz+Tz/VLIBOGYdnmeaod9UujiB/8V+bU=
 github.com/vogo/clog v0.0.0-20181016072022-7f0c7494cb6c h1:ss6kECtkGpZURkzhd2itdDgiWv7am4Zix8nwZZIm3hg=
 github.com/vogo/clog v0.0.0-20181016072022-7f0c7494cb6c/go.mod h1:RYd7K9PTYmbBz+Tz/VLIBOGYdnmeaod9UujiB/8V+bU=
+github.com/vogo/clog v0.0.0-20181017095903-cc7b8dcd3998 h1:I61NSCmBgB1PpHgWL1Rxb7nQlQWeVh+nj0LsWYjqivY=
+github.com/vogo/clog v0.0.0-20181017095903-cc7b8dcd3998/go.mod h1:RYd7K9PTYmbBz+Tz/VLIBOGYdnmeaod9UujiB/8V+bU=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f h1:J9EGpcZtP0E/raorCMxlFGSTBrsSlaDGf3jU/qvAE2c=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=

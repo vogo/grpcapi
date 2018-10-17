@@ -19,6 +19,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/vogo/clog"
+	"github.com/vogo/grpcapi/pkg/identity"
 	"github.com/vogo/grpcapi/pkg/util/ctxutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -110,27 +111,34 @@ var (
 func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		var err error
-		userID := ctxutil.GetUserID(ctx)
-		requestID := ctxutil.GetRequestID(ctx)
+		start := time.Now()
 
+		var err error
+		identityJSON := ctxutil.GetIdentity(ctx)
+		requestID := ctxutil.GetRequestID(ctx)
+		identity, err := identity.Parse(identityJSON)
+		if err != nil {
+			clog.Error(ctx, "failed to parse identity: %v", err)
+			return nil, err
+		}
 		method := strings.Split(info.FullMethod, "/")
 		action := method[len(method)-1]
 
-		logPrefix := fmt.Sprintf("%s | %+v |", action, userID)
+		logPrefix := fmt.Sprintf("%s %s %s | %+v |", action, identity.Roles, identity.Scopes, identity.UserID)
 
-		if p, ok := req.(proto.Message); ok {
-			if content, err := jsonPbMarshaller.MarshalToString(p); err != nil {
-				clog.Error(ctx, "%s failed to marshal proto message to string [%+v]", logPrefix, err)
-			} else {
-				clog.Info(ctx, "%s request received: %s", logPrefix, content)
+		if clog.DebugEnabled() {
+			if p, ok := req.(proto.Message); ok {
+				if content, err := jsonPbMarshaller.MarshalToString(p); err != nil {
+					clog.Error(ctx, "%s failed to marshal proto message to string [%+v]", logPrefix, err)
+				} else {
+					clog.Debug(ctx, "%s request received: %s", logPrefix, content)
+				}
 			}
 		}
 
 		ctx = ctxutil.SetRequestID(ctx, requestID)
-		ctx = ctxutil.SetUserID(ctx, userID)
+		ctx = ctxutil.SetIdentity(ctx, identityJSON)
 
-		start := time.Now()
 		resp, err := handler(ctx, req)
 		elapsed := time.Since(start)
 		clog.Info(ctx, "%s request elapse: %s", logPrefix, elapsed)

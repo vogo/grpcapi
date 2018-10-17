@@ -17,8 +17,9 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/vogo/clog"
 	"github.com/vogo/grpcapi/pkg/apigateway/spec"
-	"github.com/vogo/grpcapi/pkg/auth"
 	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/constants"
+	"github.com/vogo/grpcapi/pkg/identity"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
@@ -41,8 +42,8 @@ var (
 func log() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := uuid.New()
-		c.Request.Header.Set(auth.KeyRequestID, requestID)
-		c.Writer.Header().Set(auth.KeyRequestID, requestID)
+		c.Request.Header.Set(constants.KeyRequestID, requestID)
+		c.Writer.Header().Set(constants.KeyRequestID, requestID)
 
 		t := time.Now()
 
@@ -110,9 +111,9 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			return
 		}
 		clog.Debug(ctx, "request user id %v", claims.UserID)
-		req.Header.Set(auth.KeyUserID, claims.UserID)
-		req.Header.Set(auth.KeyScope, "admin")
-		req.Header.Del(auth.Authorization)
+		identity := identity.New(claims.UserID, []string{"admin", "manager"}, []string{"read", "write"})
+		req.Header.Set(constants.KeyIdentity, identity.ToJSON())
+		req.Header.Del(constants.Authorization)
 
 		mux.ServeHTTP(w, req)
 	})
@@ -128,11 +129,12 @@ func swaggerHandler() http.Handler {
 func mainHandler(cfg *config.Config) http.Handler {
 	var gwmux = runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, req *http.Request) metadata.MD {
-			return metadata.Pairs(
-				auth.KeyUserID, req.Header.Get(auth.KeyUserID),
-				auth.KeyScope, req.Header.Get(auth.KeyScope),
-				auth.KeyRequestID, req.Header.Get(auth.KeyRequestID),
+			md := metadata.Pairs(
+				constants.KeyIdentity, req.Header.Get(constants.KeyIdentity),
+				constants.KeyRequestID, req.Header.Get(constants.KeyRequestID),
 			)
+
+			return md
 		}),
 	)
 
