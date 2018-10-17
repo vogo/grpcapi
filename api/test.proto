@@ -1,0 +1,18 @@
+syntax = "proto3";
+package grpcapi;
+
+// set go package name to pb
+option go_package = "pb";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MessageOptions {
+  int32 msg_option_a = 50011;
+  int32 msg_option_b = 50012;
+}
+
+message TestMessage {
+  option (msg_option_a) = 22;
+  option (msg_option_b) = 33;
+  string name = 1;
+}
