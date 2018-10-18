@@ -112,7 +112,7 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 		}
 		clog.Debug(ctx, "request user id %v", claims.UserID)
 		identity := identity.New(claims.UserID, []string{"admin", "manager"}, []string{"read", "write"})
-		req.Header.Set(constants.KeyIdentity, identity.ToJSON())
+		req.Header.Set(constants.KeyIdentity, identity.String())
 		req.Header.Del(constants.Authorization)
 
 		mux.ServeHTTP(w, req)
