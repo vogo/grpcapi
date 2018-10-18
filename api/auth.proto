@@ -1,0 +1,35 @@
+syntax = "proto3";
+package grpcapi;
+
+// set go package name to pb
+option go_package = "pb";
+
+import "google/protobuf/descriptor.proto";
+
+// role same as that in gitlab
+enum Role {
+    ADMIN = 0;
+    OWNER = 1;
+    MASTER = 2;
+    DEVELOPER = 3;
+    REPOTER = 4;
+    USER = 5;
+  }
+
+extend google.protobuf.FileOptions {
+  repeated Role file_allow_roles = 50000;
+  repeated string file_allow_scopes = 50001;
+}
+
+extend google.protobuf.ServiceOptions {
+  repeated Role service_allow_roles = 51000;
+  repeated string service_allow_scopes = 51001;
+}
+
+extend google.protobuf.MethodOptions {
+  repeated Role method_allow_roles = 52000;
+  repeated string method_allow_scopes = 52001;
+}
+
+
+

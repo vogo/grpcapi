@@ -19,6 +19,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/vogo/clog"
+	"github.com/vogo/grpcapi/pkg/auth"
 	"github.com/vogo/grpcapi/pkg/identity"
 	"github.com/vogo/grpcapi/pkg/util/ctxutil"
 	"google.golang.org/grpc"
@@ -57,22 +58,6 @@ func grpcOptions() []grpc.ServerOption {
 		grpc_middleware.WithUnaryServerChain(
 			grpc_validator.UnaryServerInterceptor(),
 			unaryServerLogInterceptor(),
-			//func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-			//	if g.checker != nil {
-			//		err = g.checker(ctx, req)
-			//		if err != nil {
-			//			return
-			//		}
-			//	}
-
-			//	return handler(ctx, req)
-			//},
-			//func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-			//	if g.builder != nil {
-			//		req = g.builder(ctx, req)
-			//	}
-			//	return handler(ctx, req)
-			//},
 			grpc_recovery.UnaryServerInterceptor(
 				grpc_recovery.WithRecoveryHandler(func(p interface{}) error {
 					clog.Error(nil, "GRPC server recovery with error: %+v", p)
@@ -121,10 +106,19 @@ func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 			clog.Error(ctx, "failed to parse identity: %v", err)
 			return nil, err
 		}
-		method := strings.Split(info.FullMethod, "/")
-		action := method[len(method)-1]
 
-		logPrefix := fmt.Sprintf("%s %s %s | %+v |", action, identity.Roles, identity.Scopes, identity.UserID)
+		// FullMethod format: /<service>/method
+		arr := strings.Split(info.FullMethod, "/")
+		size := len(arr)
+		service := arr[size-2]
+		method := arr[size-1]
+
+		if !auth.AllowRoles(service, method, identity.Roles) {
+			status := status.New(codes.Unauthenticated, fmt.Sprintf("role %v not allowed to call %s", identity.Roles, info.FullMethod))
+			return nil, status.Err()
+		}
+
+		logPrefix := fmt.Sprintf("%s %s %s | %+v |", method, identity.Roles, identity.Scopes, identity.UserID)
 
 		if clog.DebugEnabled() {
 			if p, ok := req.(proto.Message); ok {

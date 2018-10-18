@@ -1,10 +1,12 @@
 syntax = "proto3";
 package grpcapi;
 
+import "google/api/annotations.proto";
+import "auth.proto";
+
 // set go package name to pb
 option go_package = "pb";
-
-import "google/api/annotations.proto";
+option (file_allow_roles) = USER;
 
 message EchoRequest {
     string  value = 1;
@@ -14,12 +16,8 @@ message EchoResponse {
     string result = 1;
 }
 
-
 service EchoService {
   rpc Echo(EchoRequest) returns (EchoResponse) {
-//    option (grpc.gateway.protoc_gen_swagger.options.openapiv2) = {
-//	summary: "echo service"
-//    };
     option (google.api.http) = {
       post: "/api/v1/echo"
       body: "*"

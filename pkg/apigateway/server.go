@@ -20,6 +20,7 @@ import (
 	"github.com/vogo/grpcapi/pkg/config"
 	"github.com/vogo/grpcapi/pkg/constants"
 	"github.com/vogo/grpcapi/pkg/identity"
+	"github.com/vogo/grpcapi/pkg/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
@@ -111,7 +112,7 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			return
 		}
 		clog.Debug(ctx, "request user id %v", claims.UserID)
-		identity := identity.New(claims.UserID, []string{"admin", "manager"}, []string{"read", "write"})
+		identity := identity.New(claims.UserID, []pb.Role{pb.Role_USER}, []string{"read", "write"})
 		req.Header.Set(constants.KeyIdentity, identity.String())
 		req.Header.Del(constants.Authorization)
 

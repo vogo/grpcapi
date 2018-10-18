@@ -16,8 +16,10 @@ package identity
 import (
 	"bytes"
 	"errors"
+	"strconv"
 	"strings"
 
+	"github.com/vogo/grpcapi/pkg/pb"
 	"github.com/vogo/grpcapi/pkg/util/jsonutil"
 )
 
@@ -29,9 +31,9 @@ const ItemSpliter = ','
 
 //Identity authorization identity
 type Identity struct {
-	UserID string   `json:"id"`
-	Roles  []string `json:"rol,omitempty"`
-	Scopes []string `json:"scp,omitempty"`
+	UserID string    `json:"id"`
+	Roles  []pb.Role `json:"rol,omitempty"`
+	Scopes []string  `json:"scp,omitempty"`
 }
 
 //JSON convert to json
@@ -53,7 +55,7 @@ func (id *Identity) String() string {
 		if more {
 			buf.WriteByte(ItemSpliter)
 		}
-		buf.WriteString(item)
+		buf.WriteString(strconv.FormatInt(int64(item), 10))
 		more = true
 	}
 
@@ -86,7 +88,7 @@ func Parse(s string) (*Identity, error) {
 }
 
 //ParseString parse string
-func ParseString(id *Identity, s string) {
+func ParseString(id *Identity, s string) (err error) {
 	index := strings.IndexByte(s, FieldSpliter)
 	if index < 0 {
 		id.UserID = s
@@ -101,7 +103,18 @@ func ParseString(id *Identity, s string) {
 		arrString = s[:index]
 	}
 	if arrString != "" {
-		id.Roles = strings.Split(arrString, string(ItemSpliter))
+		roleArr := strings.Split(arrString, string(ItemSpliter))
+		size := len(roleArr)
+		if size > 0 {
+			id.Roles = make([]pb.Role, size)
+			for i, r := range roleArr {
+				role32, err := strconv.ParseInt(r, 10, 32)
+				if err != nil {
+					return err
+				}
+				id.Roles[i] = pb.Role(role32)
+			}
+		}
 	}
 	if index < 0 {
 		return
@@ -120,7 +133,7 @@ func ParseJSON(id *Identity, j string) error {
 }
 
 //New identity
-func New(id string, roles, scopes []string) *Identity {
+func New(id string, roles []pb.Role, scopes []string) *Identity {
 	return &Identity{
 		UserID: id,
 		Roles:  roles,

@@ -27,6 +27,9 @@ generate: $(PROTO_FILES) Makefile
 	chown -R $${USER_ID}:$${GROUP_ID} ../pkg ../test
 	# format generated files
 	goimports -v -l -w -e -local=grpcapi ../pkg/pb
+	
+	go run makestatic.go ${PROTO_FILES}
+
 	@echo "ok"
 
 clean:
