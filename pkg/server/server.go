@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -19,7 +18,6 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/vogo/clog"
-	"github.com/vogo/grpcapi/pkg/auth"
 	"github.com/vogo/grpcapi/pkg/identity"
 	"github.com/vogo/grpcapi/pkg/util/ctxutil"
 	"google.golang.org/grpc"
@@ -107,20 +105,10 @@ func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 
-		// FullMethod format: /<service>/method
-		arr := strings.Split(info.FullMethod, "/")
-		size := len(arr)
-		service := arr[size-2]
-		method := arr[size-1]
-
-		if !auth.AllowRoles(service, method, identity.Roles) {
-			status := status.New(codes.Unauthenticated, fmt.Sprintf("role %v not allowed to call %s", identity.Roles, info.FullMethod))
-			return nil, status.Err()
-		}
-
-		logPrefix := fmt.Sprintf("%s %s %s | %+v |", method, identity.Roles, identity.Scopes, identity.UserID)
-
+		var logPrefix string
 		if clog.DebugEnabled() {
+			logPrefix := fmt.Sprintf("[%s,%s,%s,%+v]", info.FullMethod, identity.UserID, identity.Roles, identity.Scopes)
+
 			if p, ok := req.(proto.Message); ok {
 				if content, err := jsonPbMarshaller.MarshalToString(p); err != nil {
 					clog.Error(ctx, "%s failed to marshal proto message to string [%+v]", logPrefix, err)

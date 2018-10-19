@@ -23,12 +23,12 @@ require (
 	github.com/vogo/clog v0.0.0-20181017095903-cc7b8dcd3998
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e // indirect
 	golang.org/x/lint v0.0.0-20181011164241-5906bd5c48cd // indirect
-	golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1
-	golang.org/x/oauth2 v0.0.0-20181003184128-c57b0facaced // indirect
+	golang.org/x/net v0.0.0-20181017193950-04a2e542c03f
+	golang.org/x/oauth2 v0.0.0-20181017192945-9dcd33a902f4 // indirect
 	golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba // indirect
-	golang.org/x/tools v0.0.0-20181015221341-5d4988d199e2 // indirect
+	golang.org/x/tools v0.0.0-20181019005945-6adeb8aab2de // indirect
 	google.golang.org/appengine v1.2.0 // indirect
-	google.golang.org/genproto v0.0.0-20181004005441-af9cb2a35e7f
+	google.golang.org/genproto v0.0.0-20181016170114-94acd270e44e
 	google.golang.org/grpc v1.15.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/oauth2.v3 v3.9.0

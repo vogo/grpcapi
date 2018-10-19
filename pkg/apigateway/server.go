@@ -37,6 +37,7 @@ var (
 			Timeout:             10 * time.Second,
 			PermitWithoutStream: true,
 		}),
+		grpc.WithUnaryInterceptor(authorizer),
 	}
 )
 
@@ -103,16 +104,18 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 		oauth2Svr := o2.GetOauth2Svr()
 		token, ok := oauth2Svr.BearerAuth(req)
 		if !ok {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, "token required").Err())
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.Error(codes.Unauthenticated, "token required"))
 			return
 		}
 		claims, err := oauth2Svr.ParseJWTAccessToken(token)
 		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.New(codes.Unauthenticated, err.Error()).Err())
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.Error(codes.Unauthenticated, err.Error()))
 			return
 		}
 		clog.Debug(ctx, "request user id %v", claims.UserID)
-		identity := identity.New(claims.UserID, []pb.Role{pb.Role_USER}, []string{"read", "write"})
+
+		//TODO --> currently use a struct as an identity object, CHANGE IT as business required
+		identity := identity.New(claims.UserID, []pb.Role{}, []string{"read", "write"})
 		req.Header.Set(constants.KeyIdentity, identity.String())
 		req.Header.Del(constants.Authorization)
 

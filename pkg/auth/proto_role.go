@@ -16,41 +16,23 @@ import (
 //MethodRoles roles
 type MethodRoles map[pb.Role]bool
 
-//ServiceRoles roles
-type ServiceRoles map[string]MethodRoles
-
 var (
-	serviceRolesMap = make(map[string]ServiceRoles)
+	methodRolesMap = make(map[string]MethodRoles)
 )
 
-//getServiceRoles get
-func getServiceRoles(name string) ServiceRoles {
-	c, ok := serviceRolesMap[name]
-	if !ok {
-		c = ServiceRoles{}
-		serviceRolesMap[name] = c
-	}
-	return c
-}
-
 //getMethodRoles get
-func getMethodRoles(serviceRoles ServiceRoles, name string) MethodRoles {
-	c, ok := serviceRoles[name]
+func getMethodRoles(name string) MethodRoles {
+	c, ok := methodRolesMap[name]
 	if !ok {
 		c = MethodRoles{}
-		serviceRoles[name] = c
+		methodRolesMap[name] = c
 	}
 	return c
 }
 
 //AllowRoles whether allow roles
-func AllowRoles(serviceName, methodName string, roles []pb.Role) bool {
-	serviceRoles, ok := serviceRolesMap[serviceName]
-	if !ok {
-		return true
-	}
-	methodRoles, ok := serviceRoles[methodName]
-
+func AllowRoles(method string, roles []pb.Role) bool {
+	methodRoles, ok := methodRolesMap[method]
 	if !ok {
 		return true
 	}
@@ -59,13 +41,15 @@ func AllowRoles(serviceName, methodName string, roles []pb.Role) bool {
 		return false
 	}
 
-	for _, role := range roles {
-		if _, ok := methodRoles[role]; !ok {
-			return false
+	for need := range methodRoles {
+		for _, role := range roles {
+			if need == role {
+				return true
+			}
 		}
 	}
 
-	return true
+	return false
 }
 
 // copy from: https://github.com/golang/protobuf/blob/master/descriptor/descriptor.go
@@ -152,9 +136,9 @@ func parseService(pkg string, fileRoleArr []pb.Role, service *protobuf.ServiceDe
 	}
 }
 func parseMethod(fileRoleArr []pb.Role, serviceRoleArr []pb.Role, serviceName string, method *protobuf.MethodDescriptorProto) {
-	serviceRoles := getServiceRoles(serviceName)
-	name := *method.Name
-	methodRoles := getMethodRoles(serviceRoles, name)
+	methodName := *method.Name
+	methodPath := fmt.Sprintf("/%s/%s", serviceName, methodName)
+	methodRoles := getMethodRoles(methodPath)
 	for _, role := range fileRoleArr {
 		methodRoles[role] = true
 	}
@@ -182,5 +166,5 @@ func init() {
 	for _, file := range api.ProtoFiles {
 		parseFile(file)
 	}
-	clog.Info(nil, "service roles map:%v", serviceRolesMap)
+	clog.Info(nil, "service roles map:%v", methodRolesMap)
 }
