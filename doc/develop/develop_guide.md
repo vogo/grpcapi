@@ -1,25 +1,6 @@
 # Develop Guide
 
-## 1. Preparation
-
-install mongodb server: 
-- redhat or centos: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/
-- install from mongodb server package: https://www.mongodb.com/download-center/v2/community.
-
-create mongodb oauth2 user:
-```
-use oauth2
-
-db.createUser(
-   {
-     user: "oauth2",
-     pwd: "oauth2",
-     roles: [ "readWrite", "dbAdmin" ]
-   }
-)
-```
-
-## 2. Download 
+## 1. Download 
 
 ```
 go get github.com/vogo/grpcapi
@@ -33,11 +14,15 @@ export GO111MODULE=on
 go mod download
 ```
 
-## 3.Run 
+## 2. Start Mongodb
+
+see [create mongodb](create_mongodb.md)
+
+## 3.Run in Localhost 
 
 edit `/etc/hosts` to add ip-host map for localhost:
 ```
-127.0.0.1 grpc-echo grpc-hello
+127.0.0.1 grpc-echo grpc-hello grpc-mongodb
 ```
 
 run services and apigateway:
@@ -51,38 +36,22 @@ go run cmd/hello/main.go
 # Run ApiGateway Service
 go run cmd/apigateway/main.go -config=cmd/apigateway/config.yml
 ```
+## 4. Run in Docker
 
-## 4.Add Mongodb Oauth2 Demo Data
+create a docker network: `docker network create grpc`
 
-mongodb collection `client` :
+build docker images:
 ```
-{ 
-    "_id" : "000000", 
-    "secret" : "999999", 
-    "domain" : "https://localhost", 
-    "scopes" : [
-        "read", 
-        "manage", 
-        "admin", 
-        "view"
-    ], 
-    "grant_types" : [
-        "password", 
-        "refresh_token", 
-    ]
-}
+cd build
+make build
 ```
 
-mongodb collection `user` u1 (password:123456):
+start docker instances:
 ```
-{
-    "_id" : "u1",
-    "password" : BinData(0, "bTYCH2X8J0a1F9aK1hv//9BYC7/SIyq89OVz3pZvcog="),
-    "salt" : BinData(0, "NXl1mO6iV5YpI8YEuy2vTg=="),
-    "scopes" : {
-        "000000" : "manage,admin"
-    }
-}
+cd script
+./run-docker-apigateway.sh
+./run-docker-echo.sh
+./run-docker-hello.sh
 ```
 
 ## 5. Test
