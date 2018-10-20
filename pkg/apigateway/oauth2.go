@@ -11,10 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go2s/o2m"
 	"github.com/go2s/o2s/o2"
+	"github.com/vogo/clog"
 	oauth2 "gopkg.in/oauth2.v3"
 )
 
 func (s *server) initOauth2(r *gin.Engine) {
+	clog.Info(nil, "init oauth2 server")
+
 	database := s.cfg.Mongo.Database
 	mgoSession := o2m.NewMongoSession(&s.cfg.Mongo)
 

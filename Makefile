@@ -9,15 +9,5 @@ else
 endif
 
 MAKEFILE = $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
-BUILD_PARAM = GOOS=linux
-
-clean: 
-	$(RM)  build/cmd/*
-	mkdir -p build/cmd 
-
-build: clean
-	$(BUILD_PARAM) go build -o build/cmd/apigateway cmd/apigateway/main.go 
-	$(BUILD_PARAM) go build -o build/cmd/hello cmd/hello/main.go 
-	$(BUILD_PARAM) go build -o build/cmd/echo cmd/echo/main.go 
 
 

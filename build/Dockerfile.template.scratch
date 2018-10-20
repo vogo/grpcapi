@@ -1,0 +1,4 @@
+FROM scratch  
+ADD cmd/<COMMAND_FILE> / 
+CMD ["/<COMMAND_FILE>"]
+

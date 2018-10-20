@@ -20,7 +20,7 @@ import (
 // see https://godoc.org/google.golang.org/grpc#UnaryClientInterceptor
 // authorizing in APIGATEWAY only
 func authorizer(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-	clog.Info(ctx, "method:%s", method)
+	clog.Debug(ctx, "request grpc method:%s", method)
 
 	identityJSON := ctxutil.GetIdentity(ctx)
 	identity, err := identity.Parse(identityJSON)

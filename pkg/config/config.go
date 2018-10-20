@@ -25,33 +25,51 @@ var (
 const (
 	//HostPrefix host name prefix
 	HostPrefix = "grpc-"
+
 	//ServiceEcho echo service name
 	ServiceEcho = "echo"
+
 	//ServiceHello hello service name
 	ServiceHello = "hello"
+
+	//ServiceMongodb mongodb service name
+	ServiceMongodb = "mongodb"
 )
 
 const (
 	//PortAPIGateway api gateway port
 	PortAPIGateway = 8080
+
 	//PortEcho echo service port
 	PortEcho = 9001
+
 	//PortHello hello service port
 	PortHello = 9002
+
+	//PortMongodb mongodb service port
+	PortMongodb = 27017
 )
 
 const (
 	//HostEcho echo service host
 	HostEcho = HostPrefix + ServiceEcho
+
 	//HostHello hello service host
 	HostHello = HostPrefix + ServiceHello
+
+	//HostMongodb mongodb service host
+	HostMongodb = HostPrefix + ServiceMongodb
 )
 
 var (
 	//EndpointEcho echo service address
 	EndpointEcho = fmt.Sprintf("%s:%d", HostEcho, PortEcho)
+
 	//EndpointHello hello service address
 	EndpointHello = fmt.Sprintf("%s:%d", HostHello, PortHello)
+
+	//EndpointMongodb mongodb service address
+	EndpointMongodb = fmt.Sprintf("%s:%d", HostMongodb, PortMongodb)
 )
 
 //Config config definition
@@ -79,7 +97,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		SignKey: "grpcapi-38ASD(*DFL@S",
 		Mongo: o2m.MongoConfig{
-			Addrs:     []string{"127.0.0.1:27017"},
+			Addrs:     []string{"10.112.52.42:27017"},
 			Database:  "oauth2",
 			Username:  "oauth2",
 			Password:  "oauth2",
@@ -105,8 +123,7 @@ func LoadConfig() *Config {
 
 //LoadConfigFile load config file
 func LoadConfigFile(file string) *Config {
-	//cfg := DefaultConfig()
-	cfg := &Config{}
+	cfg := DefaultConfig()
 
 	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")

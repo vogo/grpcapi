@@ -115,7 +115,7 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 		clog.Debug(ctx, "request user id %v", claims.UserID)
 
 		//TODO --> currently use a struct as an identity object, CHANGE IT as business required
-		identity := identity.New(claims.UserID, []pb.Role{}, []string{"read", "write"})
+		identity := identity.New(claims.UserID, []pb.Role{pb.Role_USER}, []string{"read", "write"})
 		req.Header.Set(constants.KeyIdentity, identity.String())
 		req.Header.Del(constants.Authorization)
 

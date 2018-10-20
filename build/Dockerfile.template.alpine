@@ -1,0 +1,4 @@
+FROM alpine:latest
+ADD cmd/<COMMAND_FILE> / 
+CMD ["/<COMMAND_FILE>"]
+
