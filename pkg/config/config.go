@@ -97,7 +97,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		SignKey: "grpcapi-38ASD(*DFL@S",
 		Mongo: o2m.MongoConfig{
-			Addrs:     []string{"10.112.52.42:27017"},
+			Addrs:     []string{EndpointMongodb},
 			Database:  "oauth2",
 			Username:  "oauth2",
 			Password:  "oauth2",
