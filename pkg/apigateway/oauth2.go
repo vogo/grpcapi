@@ -12,7 +12,7 @@ import (
 	"github.com/go2s/o2m"
 	"github.com/go2s/o2s/o2"
 	"github.com/vogo/clog"
-	oauth2 "gopkg.in/oauth2.v3"
+	oauth2 "github.com/go2s/oauth2"
 )
 
 func (s *server) initOauth2(r *gin.Engine) {
