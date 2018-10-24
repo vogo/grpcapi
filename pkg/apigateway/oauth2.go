@@ -11,8 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go2s/o2m"
 	"github.com/go2s/o2s/o2"
+	"github.com/go2s/oauth2"
+	"github.com/go2s/oauth2/jwtex"
 	"github.com/vogo/clog"
-	oauth2 "github.com/go2s/oauth2"
 )
 
 func (s *server) initOauth2(r *gin.Engine) {
@@ -29,10 +30,10 @@ func (s *server) initOauth2(r *gin.Engine) {
 	o2Cfg := o2.DefaultServerConfig()
 
 	o2Cfg.ServerName = "Oauth2 Server"
-	o2Cfg.JWT = o2.JWTConfig{
-		Support:    true,
-		SignKey:    []byte(s.cfg.SignKey),
-		SignMethod: jwt.SigningMethodHS512,
+	o2Cfg.JWTSupport = true
+	o2Cfg.JWT = jwtex.JWTConfig{
+		SignedKey:     []byte(s.cfg.SignKey),
+		SigningMethod: jwt.SigningMethodHS512,
 	}
 	svr := o2.InitOauth2Server(cs, ts, us, as, o2Cfg, func(method, pattern string, handler func(w http.ResponseWriter, r *http.Request)) {
 		r.Handle(method, pattern, func(c *gin.Context) {

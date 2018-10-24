@@ -9,6 +9,7 @@ import (
 
 	"github.com/vogo/clog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
@@ -30,7 +31,10 @@ func NewClient(host string, port int) (*grpc.ClientConn, error) {
 	endpoint := fmt.Sprintf("%s:%d", host, port)
 
 	if conn, ok := clientCache.Load(endpoint); ok {
-		return conn.(*grpc.ClientConn), nil
+		clientConn := conn.(*grpc.ClientConn)
+		if clientConn.GetState() != connectivity.TransientFailure && clientConn.GetState() != connectivity.Shutdown {
+			return clientConn, nil
+		}
 	}
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, endpoint, ClientOptions...)

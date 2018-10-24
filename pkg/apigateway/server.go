@@ -112,10 +112,12 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.Error(codes.Unauthenticated, err.Error()))
 			return
 		}
-		clog.Debug(ctx, "request user id %v", claims.UserID)
+		userID := claims.Subject
+		scopes := strings.Split(claims.Scope, ",")
+		clog.Debug(ctx, "request user id %v", userID)
 
 		//TODO --> currently use a struct as an identity object, CHANGE IT as business required
-		identity := identity.New(claims.UserID, []pb.Role{pb.Role_USER}, []string{"read", "write"})
+		identity := identity.New(userID, []pb.Role{pb.Role_USER}, scopes)
 		req.Header.Set(constants.KeyIdentity, identity.String())
 		req.Header.Del(constants.Authorization)
 
