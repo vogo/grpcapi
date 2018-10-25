@@ -20,17 +20,18 @@ generate: $(PROTO_FILES) Makefile
 
 	cd ../pkg/apigateway/spec/ && cat ./*.swagger.json 0.swagger.json | jq --slurp 'reduce .[] as $$item ({}; . * $$item)' | jq -f ./preprocess.jq > ./api.swagger.json
 	cd ../pkg/apigateway/spec/ && find . | grep .swagger.json | grep -v "api" | xargs rm
-
-	rm -rf ../test/models/* ../test/client/*
-	cd ../test/ && swagger generate client -f ../pkg/apigateway/spec/api.swagger.json -A grpcapi
-	# need to exec chown finally
-	chown -R $${USER_ID}:$${GROUP_ID} ../pkg ../test
 	# format generated files
 	goimports -v -l -w -e -local=grpcapi ../pkg/pb
 	
 	go run makestatic.go ${PROTO_FILES}
 
 	@echo "ok"
+
+swagger-client: generate
+	rm -rf ../test/models/* ../test/client/*
+	cd ../test/ && swagger generate client -f ../pkg/apigateway/spec/api.swagger.json -A grpcapi
+	# need to exec chown finally
+	chown -R $${USER_ID}:$${GROUP_ID} ../pkg ../test
 
 clean:
 	@echo "ok"
