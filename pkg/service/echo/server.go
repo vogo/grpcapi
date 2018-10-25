@@ -9,10 +9,10 @@ import (
 	"fmt"
 
 	"github.com/vogo/clog"
-	"github.com/vogo/grpcapi/pkg/client/hello"
-	"github.com/vogo/grpcapi/pkg/config"
-	"github.com/vogo/grpcapi/pkg/pb"
-	"github.com/vogo/grpcapi/pkg/server"
+	"grpcapi/pkg/client/hello"
+	"grpcapi/pkg/config"
+	"grpcapi/pkg/pb"
+	"grpcapi/pkg/server"
 	"google.golang.org/grpc"
 )
 

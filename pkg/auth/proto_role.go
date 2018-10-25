@@ -9,8 +9,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/vogo/clog"
-	"github.com/vogo/grpcapi/api"
-	"github.com/vogo/grpcapi/pkg/pb"
+	"grpcapi/api"
+	"grpcapi/pkg/pb"
 )
 
 //MethodRoles roles

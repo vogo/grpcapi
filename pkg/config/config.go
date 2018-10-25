@@ -14,7 +14,7 @@ import (
 	"github.com/go2s/o2m"
 	"github.com/spf13/viper"
 	"github.com/vogo/clog"
-	"github.com/vogo/grpcapi/pkg/util/ctxutil"
+	"grpcapi/pkg/util/ctxutil"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 

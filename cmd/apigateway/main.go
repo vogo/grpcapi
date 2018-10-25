@@ -5,8 +5,8 @@
 package main
 
 import (
-	"github.com/vogo/grpcapi/pkg/apigateway"
-	"github.com/vogo/grpcapi/pkg/config"
+	"grpcapi/pkg/apigateway"
+	"grpcapi/pkg/config"
 )
 
 func main() {

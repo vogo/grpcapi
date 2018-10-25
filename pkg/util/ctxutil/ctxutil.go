@@ -7,7 +7,7 @@ package ctxutil
 import (
 	"context"
 
-	"github.com/vogo/grpcapi/pkg/constants"
+	"grpcapi/pkg/constants"
 	"google.golang.org/grpc/metadata"
 )
 

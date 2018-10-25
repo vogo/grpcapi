@@ -24,6 +24,7 @@ edit `/etc/hosts` to add ip-host map for localhost:
 ```
 127.0.0.1 grpc-echo grpc-hello grpc-mongodb
 ```
+> NOTE: clean http proxy setting for shell before starting services.
 
 run services and apigateway:
 ```bash

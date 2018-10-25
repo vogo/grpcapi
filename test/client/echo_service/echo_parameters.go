@@ -17,7 +17,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/vogo/grpcapi/test/models"
+	models "grpcapi/test/models"
 )
 
 // NewEchoParams creates a new EchoParams object

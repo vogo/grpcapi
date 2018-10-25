@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/vogo/grpcapi/test/models"
+	models "grpcapi/test/models"
 )
 
 // EchoReader is a Reader for the Echo structure.

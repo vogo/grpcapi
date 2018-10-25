@@ -11,8 +11,8 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/vogo/grpcapi/test/client/echo_service"
-	"github.com/vogo/grpcapi/test/client/hello_service"
+	"grpcapi/test/client/echo_service"
+	"grpcapi/test/client/hello_service"
 )
 
 // Default grpcapi HTTP client.

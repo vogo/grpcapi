@@ -1,9 +1,9 @@
 package echo
 
 import (
-	"github.com/vogo/grpcapi/pkg/config"
-	"github.com/vogo/grpcapi/pkg/conn"
-	"github.com/vogo/grpcapi/pkg/pb"
+	"grpcapi/pkg/config"
+	"grpcapi/pkg/conn"
+	"grpcapi/pkg/pb"
 )
 
 //Client echo service grpc client

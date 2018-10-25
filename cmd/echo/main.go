@@ -5,8 +5,8 @@
 package main
 
 import (
-	"github.com/vogo/grpcapi/pkg/config"
-	"github.com/vogo/grpcapi/pkg/service/echo"
+	"grpcapi/pkg/config"
+	"grpcapi/pkg/service/echo"
 )
 
 func main() {

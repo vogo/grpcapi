@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vogo/grpcapi/pkg/config"
-	"github.com/vogo/grpcapi/pkg/pb"
-	"github.com/vogo/grpcapi/pkg/server"
+	"grpcapi/pkg/config"
+	"grpcapi/pkg/pb"
+	"grpcapi/pkg/server"
 	"google.golang.org/grpc"
 )
 
