@@ -1,9 +1,9 @@
 package hello
 
 import (
-	"grpcapi/pkg/config"
-	"grpcapi/pkg/conn"
-	"grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/client"
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/pb"
 )
 
 //Client hello service grpc client
@@ -13,7 +13,7 @@ type Client struct {
 
 //NewClient new hello service grpc client
 func NewClient() (*Client, error) {
-	c, err := conn.NewClient(config.HostHello, config.PortHello)
+	c, err := client.NewClient(config.HostHello, config.PortHello)
 	if err != nil {
 		return nil, err
 	}

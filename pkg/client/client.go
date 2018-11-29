@@ -1,4 +1,4 @@
-package conn
+package client
 
 import (
 	"context"
@@ -12,6 +12,9 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 )
 
 //ClientOptions grpc client options
@@ -22,6 +25,13 @@ var ClientOptions = []grpc.DialOption{
 		Timeout:             10 * time.Second,
 		PermitWithoutStream: true,
 	}),
+}
+
+//InitGrpcClientOptions init
+func InitGrpcClientOptions() {
+	tracingIntercepter := grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()))
+	streamIntercepter := grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer()))
+	ClientOptions = append(ClientOptions, tracingIntercepter, streamIntercepter)
 }
 
 var clientCache sync.Map

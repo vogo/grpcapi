@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"grpcapi/pkg/config"
-	"grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/pb"
 	"google.golang.org/grpc"
 )
 

@@ -9,9 +9,9 @@ import (
 	"fmt"
 
 	"github.com/vogo/clog"
-	"grpcapi/pkg/auth"
-	"grpcapi/pkg/identity"
-	"grpcapi/pkg/util/ctxutil"
+	"github.com/vogo/grpcapi/pkg/auth"
+	"github.com/vogo/grpcapi/pkg/identity"
+	"github.com/vogo/grpcapi/pkg/util/ctxutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

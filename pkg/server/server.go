@@ -12,14 +12,19 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/vogo/grpcapi/pkg/client"
+	"github.com/vogo/grpcapi/pkg/identity"
+	"github.com/vogo/grpcapi/pkg/util/ctxutil"
+
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 	"github.com/vogo/clog"
-	"grpcapi/pkg/identity"
-	"grpcapi/pkg/util/ctxutil"
+	"github.com/vogo/grpcapi/pkg/tracing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
@@ -27,33 +32,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// GRPCServerCallbackFunc function to register server
-type GRPCServerCallbackFunc func(*grpc.Server)
+var grpcServerOptions []grpc.ServerOption
 
-// Serve start a grpc server registering given server
-func Serve(address string, callback GRPCServerCallbackFunc) {
-	lis, err := net.Listen("tcp", address)
-	if err != nil {
-		clog.Fatal(nil, "failed to listen: %v", err)
-	}
-	//	s := grpc.NewServer()
-	s := grpc.NewServer(grpcOptions()...)
-	callback(s)
-	// Register reflection service on gRPC server.
-	reflection.Register(s)
-	clog.Info(nil, "start grpc on %s", address)
-	if err := s.Serve(lis); err != nil {
-		clog.Fatal(nil, "failed to serve: %v", err)
-	}
-}
-
-func grpcOptions() []grpc.ServerOption {
-	builtinOptions := []grpc.ServerOption{
+//InitGrpcServerOptions init
+func InitGrpcServerOptions() {
+	grpcServerOptions = []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             10 * time.Second,
 			PermitWithoutStream: true,
 		}),
 		grpc_middleware.WithUnaryServerChain(
+			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 			grpc_validator.UnaryServerInterceptor(),
 			unaryServerLogInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(
@@ -69,6 +58,7 @@ func grpcOptions() []grpc.ServerOption {
 			),
 		),
 		grpc_middleware.WithStreamServerChain(
+			otgrpc.OpenTracingStreamServerInterceptor(opentracing.GlobalTracer()),
 			grpc_recovery.StreamServerInterceptor(
 				grpc_recovery.WithRecoveryHandler(func(p interface{}) error {
 					clog.Error(nil, "GRPC server recovery with error: %+v", p)
@@ -82,7 +72,6 @@ func grpcOptions() []grpc.ServerOption {
 		),
 	}
 
-	return builtinOptions
 }
 
 var (
@@ -104,6 +93,7 @@ func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 			clog.Error(ctx, "failed to parse identity: %v", err)
 			return nil, err
 		}
+		clog.Info(ctx, "%v", identity)
 
 		var logPrefix string
 		if clog.DebugEnabled() {
@@ -131,5 +121,31 @@ func unaryServerLogInterceptor() grpc.UnaryServerInterceptor {
 			}
 		}
 		return resp, err
+	}
+}
+
+// GRPCServerCallbackFunc function to register server
+type GRPCServerCallbackFunc func(*grpc.Server)
+
+// Serve start a grpc server registering given server
+func Serve(address string, callback GRPCServerCallbackFunc) {
+	lis, err := net.Listen("tcp", address)
+	if err != nil {
+		clog.Fatal(nil, "failed to listen: %v", err)
+	}
+	// 1. initial tracing before grpc
+	tracing.Start()
+	// 2. initial grpc
+	InitGrpcServerOptions()
+	client.InitGrpcClientOptions()
+
+	//	s := grpc.NewServer()
+	s := grpc.NewServer(grpcServerOptions...)
+	callback(s)
+	// Register reflection service on gRPC server.
+	reflection.Register(s)
+	clog.Info(nil, "start grpc on %s", address)
+	if err := s.Serve(lis); err != nil {
+		clog.Fatal(nil, "failed to serve: %v", err)
 	}
 }

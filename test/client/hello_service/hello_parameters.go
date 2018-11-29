@@ -17,7 +17,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "grpcapi/test/models"
+	models "github.com/vogo/grpcapi/test/models"
 )
 
 // NewHelloParams creates a new HelloParams object

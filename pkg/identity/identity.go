@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
-	"grpcapi/pkg/pb"
-	"grpcapi/pkg/util/jsonutil"
+	"github.com/vogo/grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/util/jsonutil"
 )
 
 // FieldSpliter field splitor

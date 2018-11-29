@@ -3,7 +3,11 @@
 ## 1. Download 
 
 ```
-go get github.com/vogo/grpcapi
+export GO111MODULE=off
+go get -v github.com/vogo/grpcapi
+go get -v github.com/gogo/protobuf
+go get -v github.com/grpc-ecosystem/grpc-gateway
+
 
 cd $GOPATH/src/github.com/vogo/grpcapi
 

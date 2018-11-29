@@ -11,16 +11,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vogo/grpcapi/pkg/apigateway/spec"
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/constants"
+	"github.com/vogo/grpcapi/pkg/identity"
+	"github.com/vogo/grpcapi/pkg/pb"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go2s/o2s/o2"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pborman/uuid"
 	"github.com/vogo/clog"
-	"grpcapi/pkg/apigateway/spec"
-	"grpcapi/pkg/config"
-	"grpcapi/pkg/constants"
-	"grpcapi/pkg/identity"
-	"grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/tracing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
@@ -112,6 +114,10 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, status.Error(codes.Unauthenticated, err.Error()))
 			return
 		}
+
+		span := tracing.Span(req)
+		defer span.Finish()
+
 		userID := claims.Subject
 		scopes := strings.Split(claims.Scope, ",")
 		clog.Debug(ctx, "request user id %v", userID)
@@ -122,6 +128,7 @@ func serveGatewayMux(mux *runtime.ServeMux) http.Handler {
 		req.Header.Del(constants.Authorization)
 
 		mux.ServeHTTP(w, req)
+
 	})
 }
 
@@ -139,7 +146,12 @@ func mainHandler(cfg *config.Config) http.Handler {
 				constants.KeyIdentity, req.Header.Get(constants.KeyIdentity),
 				constants.KeyRequestID, req.Header.Get(constants.KeyRequestID),
 			)
-
+			for name, value := range req.Header {
+				if tracing.SpanHTTPHeader(name) {
+					md[strings.ToLower(name)] = value
+				}
+			}
+			clog.Info(ctx, "grpc metedata:%v", md)
 			return md
 		}),
 	)
@@ -174,6 +186,8 @@ func (s *server) run() error {
 	r.GET("/swagger/api/v1", gin.WrapH(swaggerHandler()))
 
 	s.initOauth2(r)
+
+	tracing.Start()
 
 	return r.Run(fmt.Sprintf(":%d", config.PortAPIGateway))
 }

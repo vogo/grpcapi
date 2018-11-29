@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/pb"
 )
 
 func TestIdentity(t *testing.T) {

@@ -9,10 +9,10 @@ import (
 	"fmt"
 
 	"github.com/vogo/clog"
-	"grpcapi/pkg/client/hello"
-	"grpcapi/pkg/config"
-	"grpcapi/pkg/pb"
-	"grpcapi/pkg/server"
+	"github.com/vogo/grpcapi/pkg/client/hello"
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/server"
 	"google.golang.org/grpc"
 )
 
@@ -21,6 +21,7 @@ type Server struct{}
 
 // Echo echo for request value
 func (s *Server) Echo(c context.Context, req *pb.EchoRequest) (res *pb.EchoResponse, err error) {
+	clog.Info(c, "context: %v", c)
 	helloClient, err := hello.NewClient()
 	if err != nil {
 		return nil, err

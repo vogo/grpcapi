@@ -8,9 +8,10 @@ import (
 	"context"
 	"fmt"
 
-	"grpcapi/pkg/config"
-	"grpcapi/pkg/pb"
-	"grpcapi/pkg/server"
+	"github.com/vogo/clog"
+	"github.com/vogo/grpcapi/pkg/config"
+	"github.com/vogo/grpcapi/pkg/pb"
+	"github.com/vogo/grpcapi/pkg/server"
 	"google.golang.org/grpc"
 )
 
@@ -19,6 +20,7 @@ type Server struct{}
 
 // Hello say hello for request value
 func (s *Server) Hello(c context.Context, req *pb.HelloRequest) (res *pb.HelloResponse, err error) {
+	clog.Info(c, "context: %v", c)
 	res = &pb.HelloResponse{
 		Result: Hello(req.Name),
 	}
