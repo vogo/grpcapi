@@ -20,12 +20,12 @@ func (s *server) initOauth2(r *gin.Engine) {
 	clog.Info(nil, "init oauth2 server")
 
 	database := s.cfg.Mongo.Database
-	mgoSession := o2m.NewMongoSession(&s.cfg.Mongo)
+	mgoClient := o2m.NewMongoClient(&s.cfg.Mongo)
 
-	ts := o2m.NewTokenStore(mgoSession, database, "token")
-	cs := o2m.NewClientStore(mgoSession, database, "client")
-	us := o2m.NewUserStore(mgoSession, database, "user", o2m.DefaultMgoUserCfg())
-	as := o2m.NewAuthStore(mgoSession, database, "auth")
+	ts := o2m.NewTokenStore(mgoClient, database, "token")
+	cs := o2m.NewClientStore(mgoClient, database, "client")
+	us := o2m.NewUserStore(mgoClient, database, "user", o2m.DefaultMgoUserCfg())
+	as := o2m.NewAuthStore(mgoClient, database, "auth")
 
 	o2Cfg := o2.DefaultServerConfig()
 
