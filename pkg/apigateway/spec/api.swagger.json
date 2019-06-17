@@ -24,7 +24,7 @@
         "operationId": "Echo",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/grpcapiEchoResponse"
             }
@@ -50,7 +50,7 @@
         "operationId": "Hello",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/grpcapiHelloResponse"
             }
